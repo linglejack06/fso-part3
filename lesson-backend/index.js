@@ -70,11 +70,11 @@ app.post('/api/notes', (req, res) => {
   notes = notes.concat(note);
   return res.json(note);
 });
-const PORT = 3001;
 const unknownEndPoint = (req, res) => {
   res.status(404).send({ error: 'unknown endpoint' });
 };
 app.use(unknownEndPoint);
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log('server running on port', PORT);
 });
