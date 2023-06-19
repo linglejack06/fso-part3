@@ -1,5 +1,8 @@
+// required first to ensure all modules have access to dotenv
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const Note = require('./models/note');
 
 const app = express();
 const requestLogger = (req, res, next) => {
@@ -74,7 +77,7 @@ const unknownEndPoint = (req, res) => {
   res.status(404).send({ error: 'unknown endpoint' });
 };
 app.use(unknownEndPoint);
-const PORT = process.env.PORT || 3001;
+const { PORT } = process.env;
 app.listen(PORT, () => {
   console.log('server running on port', PORT);
 });
