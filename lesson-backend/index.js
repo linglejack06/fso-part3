@@ -31,7 +31,9 @@ let notes = [
   },
 ];
 app.get('/api/notes', (req, res) => {
-  res.json(notes);
+  Note.find({}).then((storedNotes) => {
+    res.json(storedNotes);
+  });
 });
 app.get('/api/notes/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
