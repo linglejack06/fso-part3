@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 // required first to ensure all modules have access to dotenv
 require('dotenv').config();
 const express = require('express');
@@ -39,25 +40,13 @@ app.get('/api/notes', (req, res) => {
   });
 });
 app.get('/api/notes/:id', (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  const note = notes.find((n) => n.id === id);
-  if (note) {
-    res.json(note);
-  } else {
-    res.status(404).end();
-  }
+  Note.findById(req.params.id).then((note) => res.json(note));
 });
 app.delete('/api/notes/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
   notes = notes.filter((n) => n.id !== id);
   res.status(204).end();
 });
-const generateId = () => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map((n) => n.id))
-    : 0;
-  return maxId + 1;
-};
 app.post('/api/notes', (req, res) => {
   const { body } = req;
   if (!body.content) {
@@ -65,13 +54,11 @@ app.post('/api/notes', (req, res) => {
       error: 'content missing',
     });
   }
-  const note = {
+  const note = new Note({
     content: body.content,
     important: body.important || false,
-    id: generateId(),
-  };
-  notes = notes.concat(note);
-  return res.json(note);
+  });
+  note.save().then((savedNote) => res.json(savedNote));
 });
 const unknownEndPoint = (req, res) => {
   res.status(404).send({ error: 'unknown endpoint' });
