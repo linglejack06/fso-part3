@@ -6,11 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': {
-        target: 'https://phonebook-xffr.onrender.com',
-        changeOrigin: true,
-        secure: false,
-      }
+      '/api': 'http://localhost:3001',
     }
   }
 })
