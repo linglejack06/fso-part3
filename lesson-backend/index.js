@@ -51,7 +51,10 @@ app.get('/api/notes/:id', (req, res, next) => {
     })
     .catch((error) => next(error));
 });
-app.delete('/api/notes/:id', (req, res) => {
+app.delete('/api/notes/:id', (req, res, next) => {
+  Note.findByIdAndRemove(req.params.id)
+    .then(() => res.status(204).end())
+    .catch((error) => next(error));
   const id = parseInt(req.params.id, 10);
   notes = notes.filter((n) => n.id !== id);
   res.status(204).end();
@@ -72,6 +75,7 @@ app.post('/api/notes', (req, res) => {
 const unknownEndPoint = (req, res) => {
   res.status(404).send({ error: 'unknown endpoint' });
 };
+// should be loaded as middleware right before error handler as second to last
 app.use(unknownEndPoint);
 const errorHandler = (error, req, res, next) => {
   console.error(error.message);
