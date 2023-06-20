@@ -72,6 +72,18 @@ app.post('/api/notes', (req, res) => {
   });
   note.save().then((savedNote) => res.json(savedNote));
 });
+app.put('/api/notes/:id', (req, res, next) => {
+  const { body } = req;
+  const note = {
+    content: body.content,
+    important: body.important,
+  };
+  Note.findByIdAndRemove(req.params.id, note, { new: true })
+    .then((updatedNote) => {
+      res.json(updatedNote);
+    })
+    .catch((error) => next(error));
+});
 const unknownEndPoint = (req, res) => {
   res.status(404).send({ error: 'unknown endpoint' });
 };
