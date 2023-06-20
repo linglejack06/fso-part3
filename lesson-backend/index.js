@@ -17,6 +17,7 @@ app.use(express.static('build'));
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
+
 let notes = [
   {
     id: 1,
@@ -39,8 +40,16 @@ app.get('/api/notes', (req, res) => {
     res.json(storedNotes);
   });
 });
-app.get('/api/notes/:id', (req, res) => {
-  Note.findById(req.params.id).then((note) => res.json(note));
+app.get('/api/notes/:id', (req, res, next) => {
+  Note.findById(req.params.id)
+    .then((note) => {
+      if (note) {
+        res.json(note);
+      } else {
+        res.status(400).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 app.delete('/api/notes/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
@@ -64,6 +73,16 @@ const unknownEndPoint = (req, res) => {
   res.status(404).send({ error: 'unknown endpoint' });
 };
 app.use(unknownEndPoint);
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+  if (error.name === 'CastError') {
+    return res.status(400).send({ error: 'incorrectly formatted id' });
+  }
+  // passed forward to default express error handler
+  next(error);
+};
+// must be used as last middleware
+app.use(errorHandler);
 const { PORT } = process.env;
 app.listen(PORT, () => {
   console.log('server running on port', PORT);
