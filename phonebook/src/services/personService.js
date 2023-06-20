@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const BASIC_URL = '/api/persons';
-const getAll = async() => {
-  const request = await axios.get(BASIC_URL);
-  return request.data;
+const getAll = () => {
+  return axios.get(BASIC_URL)
+    .then((response) => response.data)
 }
 const addPerson = async (newPerson) => {
   const request = await axios.post(BASIC_URL, newPerson);

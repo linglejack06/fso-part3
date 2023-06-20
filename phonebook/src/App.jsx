@@ -69,7 +69,7 @@ function App() {
         })
         setTimeout(() => setNotification({}), 5000);
       })
-      .catch((err) => handleError(err.message));
+      .catch((err) => handleError(err.response.data.error));
   }
   const handleDelete = (id) => {
     personService.deletePerson(id)
