@@ -18,23 +18,6 @@ app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
 
-let notes = [
-  {
-    id: 1,
-    content: 'HTML is easy',
-    important: true,
-  },
-  {
-    id: 2,
-    content: 'Browser can execute only JavaScript',
-    important: false,
-  },
-  {
-    id: 3,
-    content: 'GET and POST are the most important methods of HTTP protocol',
-    important: true,
-  },
-];
 app.get('/api/notes', (req, res) => {
   Note.find({}).then((storedNotes) => {
     res.json(storedNotes);
@@ -55,11 +38,8 @@ app.delete('/api/notes/:id', (req, res, next) => {
   Note.findByIdAndRemove(req.params.id)
     .then(() => res.status(204).end())
     .catch((error) => next(error));
-  const id = parseInt(req.params.id, 10);
-  notes = notes.filter((n) => n.id !== id);
-  res.status(204).end();
 });
-app.post('/api/notes', (req, res) => {
+app.post('/api/notes', (req, res, next) => {
   const { body } = req;
   if (!body.content) {
     return res.status(400).json({
@@ -70,15 +50,17 @@ app.post('/api/notes', (req, res) => {
     content: body.content,
     important: body.important || false,
   });
-  note.save().then((savedNote) => res.json(savedNote));
+  note.save()
+    .then((savedNote) => res.json(savedNote))
+    .catch((error) => next(error));
 });
 app.put('/api/notes/:id', (req, res, next) => {
-  const { body } = req;
-  const note = {
-    content: body.content,
-    important: body.important,
-  };
-  Note.findByIdAndRemove(req.params.id, note, { new: true })
+  const { content, important } = req.body;
+  Note.findByIdAndRemove(
+    req.params.id,
+    { content, important },
+    { new: true, runValidators: true, context: 'query' },
+  )
     .then((updatedNote) => {
       res.json(updatedNote);
     })
@@ -93,6 +75,9 @@ const errorHandler = (error, req, res, next) => {
   console.error(error.message);
   if (error.name === 'CastError') {
     return res.status(400).send({ error: 'incorrectly formatted id' });
+  }
+  if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message });
   }
   // passed forward to default express error handler
   next(error);
